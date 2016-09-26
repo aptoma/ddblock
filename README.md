@@ -15,7 +15,7 @@ Requires a DynamoDB table with a primary partition key called `Name` of type `St
 
 ```javascript
 
-	const require('@aptoma/ddblock')('MyDynamoTableName', 60, {
+	const ddblock = require('@aptoma/ddblock')('MyDynamoTableName', 60, {
 		region: 'eu-west-1'
 	});
 
