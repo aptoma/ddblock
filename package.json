@@ -1,6 +1,6 @@
 {
   "name": "@aptoma/ddblock",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Distributed lock using DynamoDB",
   "main": "index.js",
   "scripts": {
