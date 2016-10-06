@@ -5,11 +5,15 @@ const assert = require('chai').assert;
 
 const dbUrl = 'http://localhost:9191';
 const ddblock = require('../');
-const lock = ddblock('squid-test', 60, {
-	region: 'eu-central-1',
-	endpoint: dbUrl,
-	accessKeyId: 'a',
-	secretAccessKey: 'a'
+const lock = ddblock({
+	table: 'squid-test',
+	ttl: 60,
+	aws: {
+		region: 'eu-central-1',
+		endpoint: dbUrl,
+		accessKeyId: 'a',
+		secretAccessKey: 'a'
+	}
 });
 
 describe('DDBLock', () => {
@@ -17,6 +21,16 @@ describe('DDBLock', () => {
 	before(() => nock.disableNetConnect());
 	after(() => nock.enableNetConnect());
 	afterEach(() => nock.cleanAll());
+
+	describe('Disabled mode', () => {
+		it('unlock & lock resolves without making dynamodb request', () => {
+			const disabled = ddblock({disabled: true});
+
+			return disabled
+				.lock()
+				.then(disabled.unlock.bind(disabled));
+		});
+	});
 
 	describe('#create', () => {
 

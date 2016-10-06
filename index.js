@@ -7,16 +7,19 @@ class DDBLock {
 
 	/**
 	 * Constructor
-	 * @param  {String} table name of dynamodb table
-	 * @param  {Integer} ttl  Time to live in seconds for locks
-	 * @param  {Object} opts options passed to AWS.DynamoDB
+	 * @param  {Object} opts options
+	 * @param  {String} opts.table name of dynamodb table
+	 * @param  {Integer} opts.ttl  Time to live in seconds for locks
+	 * @param  {Object} [opts.aws] options passed to AWS.DynamoDB
+ 	 * @param  {Boolean} [opts.disabled] will initiate DDBlock in disabled mode which always resolve on unlock and lock, useful for local development.
 	 */
-	constructor(table, ttl, opts) {
-		this.ttl = ttl;
-		this.table = table;
+	constructor(opts) {
+		this.ttl = opts.ttl;
+		this.table = opts.table;
 		this.AlreadyLockedError = AlreadyLockedError;
+		this.disabled = opts.disabled;
 
-		const db = new AWS.DynamoDB(Object.assign({apiVersion: '2012-08-10'}, opts));
+		const db = new AWS.DynamoDB(Object.assign({apiVersion: '2012-08-10'}, opts.aws || {}));
 
 		this.db = {
 			deleteItem: Promise.promisify(db.deleteItem, {context: db}),
@@ -32,6 +35,10 @@ class DDBLock {
 	 * @public
 	 */
 	lock(name) {
+		if (this.disabled) {
+			return Promise.resolve();
+		}
+
 		return this
 			.pruneExpired(name)
 			.then(this.create.bind(this, name));
@@ -44,6 +51,10 @@ class DDBLock {
 	 * @public
 	 */
 	unlock(name) {
+		if (this.disabled) {
+			return Promise.resolve();
+		}
+
 		return this.remove(name);
 	}
 
